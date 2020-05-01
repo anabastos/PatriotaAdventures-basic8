@@ -1,19 +1,21 @@
 - Patriota Adventures    
 Bullet hell
 
+MVP
 [x] Patriota aparecer
 [x] Patriota move
 [x] Patriota atirar
-[ ] Patriota move diagonal
+[x] Patriota move diagonal
 [x] Objeto inimigo
 [x] Colisao tiro x inimigo que tira vida do inimigo
-[ ] Intro / Instructions
-[ ] Fases
-[ ] Pegar bonus (fakenews)
-[ ] Tiro forte
+[x] Intro / Instructions
+[x] Fases
+[x] Pegar bonus (fakenews)
+[x] power upss
+[ ] Estrilhaco de Tiro 
 [ ] Inimigo atira
 [ ] Colisao tiro inimigo x patriota
-[ ] Game over
+[x] Game over
 [ ] Comportamento de cada inimigo em cada fase
 
 PLOT
@@ -37,13 +39,17 @@ NICE TO HAVE:
 - Bala especial de niobio
 - Pato da fiesp
 
-
 BONUS: Fake News -> saimbolo do zap (solta barulinho)
+Mostra na tela no canto esquerdo o quao powerupzado
+maximum patriota 3
+
 VIDA: Oculos escuros 
 
 GOSTA:
 - Bolsonaro
 - Crucifixo
+- Niobio
+- Cloroquina
 - Rede vida / Record
 - Caminhonete branca 
 
@@ -55,6 +61,7 @@ O QUE PATRIOTAS ODEIAM:
 - Aborto
 - Feminismo
 - Drogas
+- Makonha _\|/_
 - SUS
 - Vacina
 - GLOBO
