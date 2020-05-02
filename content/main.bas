@@ -8,6 +8,8 @@ print drv, ", detail type is: ", typeof(drv);
 ' Items
 own_bullets = list()
 alive_enemies = list()
+leftShrapnels = list()
+rightShrapnels = list()
 bonuses = list()
 
 ' Stage
@@ -25,7 +27,7 @@ CHINA = 3
 'Stats
 LIFES = 3
 SPEED = 50
-MAX_NIOBIO = 3
+MAX_SPAWN = 6
 
 ' Enemys
 LGBT_ENEMY = 0
@@ -131,13 +133,36 @@ def takeDamage(enemy, idx)
 	endif
 enddef
 
+def isTouched(a, b, size)
+    x = a.x - b.x 
+	y = a.y - b.y
+	if abs(x) <= size and abs(y) <= size then
+		return true
+	else
+		return false
+	endif
+enddef
+
 class cBullet(point)
     def setPosition(xb, yb)
 	  x = xb
 	  y = yb
 	enddef
+	
+	def checkIfIsTouched(instbullet, idxBullet, instenemy, idxEnemy, size)
+    	if isTouched(instbullet, instenemy, size) then
+			takeDamage(instenemy, idxEnemy)
+			remove(own_bullets, idxBullet)
+			return 1
+		endif
+		return 0
+	enddef
 endclass
 bullet = new(cBullet)
+
+class cShrapnel(cBullet)
+	
+endclass
 
 class cPatriota(point)
     def setPosition(xp, yp)
@@ -145,9 +170,11 @@ class cPatriota(point)
 	    y = yp
 	enddef
 	
+	life = 3
 	bulletSpeed = 170
 	bulletSpawn = 20
 	niobioLvl = 0
+	indestructableTime = 0
 	x = 45
 	y = 80
 
@@ -188,25 +215,32 @@ class cPatriota(point)
 	spr patriotaSprite, x, y
     enddef
 	
+	def decreaseHealth()
+		life = life - 1
+	enddef
+	
+	def resetHealth()
+		life = 3
+	enddef
+	
 	def powerUp()
 		niobioLvl = niobioLvl + 1
 	enddef
 
+	def checkIfIsTouched(instbullet, patriota, size)
+		if indestructableTime > 0 then
+			indestructableTime = indestructableTime - 1
+		elseif isTouched(instbullet, patriota, size) then
+			patriota.decreaseHealth()
+			print(patriota.life)
+			indestructableTime = 60
+		endif
+	enddef
 endclass
 
 def debugMouse()
 	touch 0, tx, ty, tb0
 	text 30, 30, "MOUSE AT " + str(tx) + "," + str(ty), rgba(5, 255, 255)
-enddef
-
-def isTouched(a, b, size)
-    x = a.x - b.x 
-	y = a.y - b.y
-	if abs(x) <= size and abs(y) <= size then
-		return true
-	else
-		return false
-	endif
 enddef
 
 def spawnNewBullet(origin)
@@ -215,51 +249,111 @@ def spawnNewBullet(origin)
 	push(own_bullets, bullet)
 enddef
 
+def spawnNewShrapnels(origin)
+	leftShrapnel = new(cShrapnel)
+	leftShrapnel.setPosition(origin.x + 9, origin.y - 2)
+	push(leftShrapnels, leftShrapnel)
+	
+	rightShrapnel = new(cShrapnel)
+	rightShrapnel.setPosition(origin.x + 14, origin.y - 2)
+	push(rightShrapnels, rightShrapnel)
+enddef
+
 b = 0
 def setBullets(delta, origin)
 	handleOwnBullets = coroutine
 	(
 		lambda(delta, origin)
 		(
+			' Set left shrapnels position
+			if len(leftShrapnels) > 0 then
+				for idxShrapnels = 0 to len(leftShrapnels) - 1
+					instLeftShrapnel = get(leftShrapnels, idxShrapnels)
+					
+					' Check shrapnel coision with enemies
+					isRemoved = 0
+					if len(alive_enemies) > 0 then
+						for idxEnemy = 0 to len(alive_enemies) - 1
+							instenemy = get(alive_enemies, idxEnemy)
+							isRemoved = instLeftShrapnel.checkIfIsTouched(instLeftShrapnel, idxShrapnels, instenemy, idxEnemy, 5)
+						next
+					endif
+					
+					if instLeftShrapnel.y = 0 and isRemoved <> 1 then
+						remove(leftShrapnels, idxBullet)
+					else
+						newY = up(instLeftShrapnel.y, delta, origin.bulletSpeed)
+						newX = moveLeft(instLeftShrapnel.x, delta, origin.bulletSpeed / 8)
+						instLeftShrapnel.setPosition(newX, newY)
+						line newX, instLeftShrapnel.y, newX - 1, instLeftShrapnel.y - 1, 1
+					endif
+				next
+			endif
+			
+			' Set right shrapnels position
+			if len(rightShrapnels) > 0 then
+				for idxShrapnels = 0 to len(rightShrapnels) - 1
+					instRightShrapnel = get(rightShrapnels, idxShrapnels)
+					
+					' Check shrapnel colision with enemies
+					isRemoved = 0
+					if len(alive_enemies) > 0 then
+						for idxEnemy = 0 to len(alive_enemies) - 1
+							instenemy = get(alive_enemies, idxEnemy)
+							isRemoved = instRightShrapnel.checkIfIsTouched(instRightShrapnel, idxShrapnels, instenemy, idxEnemy, 5)
+						next
+					endif
+					
+					if instRightShrapnel.y = 0 and isRemoved <> 1 then
+						remove(rightShrapnels, idxBullet)
+					else
+						newY = up(instRightShrapnel.y, delta, origin.bulletSpeed)
+						newX = moveRight(instRightShrapnel.x, delta, origin.bulletSpeed / 8)
+				   		instRightShrapnel.setPosition(newX, newY)
+						line newX, instRightShrapnel.y, newX + 1, instRightShrapnel.y - 1, 1
+					endif
+				next
+			endif
+		
+			' Set bullets position
 			if len(own_bullets) > 0 then
-				idxBullet = 0
-				while idxBullet < len(own_bullets)
+				for idxBullet = 0 to len(own_bullets) - 1
 					instbullet = get(own_bullets, idxBullet)
 					newY = up(instbullet.y, delta, origin.bulletSpeed)
 					instbullet.setPosition(instbullet.x, newY)
 					spr bulletSprite, instbullet.x, instbullet.y
-
-					idxEnemy = 0
+	
+					' Check bullet colision with enemies
 					if len(alive_enemies) > 0 then
-						while idxEnemy < len(alive_enemies)
+						for idxEnemy = 0 to len(alive_enemies) - 1
 							instenemy = get(alive_enemies, idxEnemy)
-							if isTouched(instbullet, instenemy, 10) then
-								takeDamage(instenemy, idxEnemy)
-								remove(own_bullets, idxBullet)
-							endif
-							idxEnemy = idxEnemy + 1
-						wend
+							instbullet.checkIfIsTouched(instbullet, idxBullet, instenemy, idxEnemy, 10)
+						next
 					endif
-
+					' Remove bullets that are on top
 					if instbullet.y = 0 then
 						remove(own_bullets, idxBullet)
 					endif
-					idxBullet = idxBullet + 1
-				wend
+				next
 			endif
 		)
 		delta, origin
 	)
 
+	' b = ticks contados para o spawn de outra bala
 	b = b + 1
     if b = origin.bulletSpawn then
 		spawnNewBullet(origin)
+		if origin.bulletSpawn = MAX_SPAWN then
+			spawnNewShrapnels(origin)
+		endif
 		b = 0
 	endif
+
 	start(handleOwnBullets)
 enddef
 
-def setEnemies(delta)
+def setEnemies(delta, patriota)
 	handleEnemies = coroutine
 	(
 		lambda(delta)
@@ -276,36 +370,53 @@ def setEnemies(delta)
 	start(handleEnemies)
 enddef
 
+def ursalEnemies(delta)
+	spawnEnemies = coroutine
+	(
+		lambda(delta)
+		(
+			enemy = new(cEnemy)
+			enemy.setPosition(50, 20)
+			enemy.setEnemyProperties(0)
+			push(alive_enemies, enemy)
+
+			wait_for(5)
+			enemy = new(cEnemy)
+			enemy.setPosition(80, 20)
+			enemy.setEnemyProperties(0)
+			push(alive_enemies, enemy)
+
+			wait_for(5)
+			enemy = new(cEnemy)
+			enemy.setPosition(100, 20)
+			enemy.setEnemyProperties(0)
+			push(alive_enemies, enemy)
+		)
+	)
+	start(spawnEnemies)
+enddef
+
 patriota = new(cPatriota)
-enemy = new(cEnemy)
-enemy.setPosition(50, 20)
-enemy.setEnemyProperties(0)
-push(alive_enemies, enemy)
-
-enemy = new(cEnemy)
-enemy.setPosition(80, 20)
-enemy.setEnemyProperties(0)
-push(alive_enemies, enemy)
-
-enemy = new(cEnemy)
-enemy.setPosition(100, 20)
-enemy.setEnemyProperties(0)
-push(alive_enemies, enemy)
 
 iNiobioWarning = 0
 def setPatriota(delta, patriota)
 	patriota.updatePosition(delta)
 	
-	bonusIdx = 0
+	if len(alive_enemies) > 0 then
+		for enemyIdx = 0 to len(alive_enemies) - 1
+			enemyInst = get(alive_enemies, enemyIdx)
+			patriota.checkIfIsTouched(enemyInst, patriota, 4)
+		 next
+	endif
+	
 	if len(bonuses) > 0 then
-		while bonusIdx < len(bonuses)
+		for bonusIdx = 0 to len(bonuses) - 1
 			bonusInst = get(bonuses, bonusIdx)
-			if isTouched(patriota, bonusInst, 4) then
+			if isTouched(patriota, bonusInst, 8) then
 				patriota.powerUp()
 				remove(bonuses, bonusIdx)
 			endif
-			bonusIdx = bonusIdx + 1
-		wend
+		next
 	endif
 
 	if patriota.niobioLvl = 0 then
@@ -321,11 +432,10 @@ def setPatriota(delta, patriota)
 		patriota.bulletSpawn = 8
 		img patriotrometro_2, 2, 105
 	elseif patriota.niobioLvl = 3 then
-		patriota.bulletSpeed = 100
-		patriota.bulletSpawn = 6
+		patriota.bulletSpeed = 310
+		patriota.bulletSpawn = MAX_SPAWN
 		img patriotrometro_3, 2, 105
 		iNiobioWarning = iNiobioWarning + 1
-		print(iNiobioWarning)
 		if iNiobioWarning > 0 and iNiobioWarning < 10 then
 			text 20, 105, "Seu niobio esta" rgba(226, 106, 106)
 			text 14, 115, "no máximo poder!!!" rgba(226, 106, 106)
@@ -343,6 +453,7 @@ REM play "T120 B6 E6 D#6 E6 F#6 G#3 F#6 G#6 A6 A#6 B3", 0, 0, true
 def game(delta)
 	if screen = URSAL then
 		img fiesp_bg, 0, 0
+		ursalEnemies(delta)
 	endif
 	'debugMouse()
 
@@ -351,8 +462,8 @@ def game(delta)
 	if patriota.life = 0 then
 		stage = GAMEOVER
 	endif
-	setBullets(delta, patriota)
-	setEnemies(delta)
+	' setBullets(delta, patriota)
+	setEnemies(delta, patriota)
 enddef
 
 t = 0
@@ -368,8 +479,8 @@ def title(delta)
 	endif
 	
 	if t = 30 then
-		'stage = INSTRUCTION
 		stage = INGAME
+	   ' stage = INSTRUCTION
 	endif
 	t = t + 1
 enddef
@@ -381,6 +492,8 @@ def gameovers(delta)
 	img brasilolhochorando, 35,50
 	
 	if tgo > 100 then
+		patriota.life = 3
+		tgo = 0
 		stage = INGAME
 	endif
 	tgo = tgo + 1
@@ -415,7 +528,6 @@ def instructions(delta)
 	endif
 	ti = ti + 1
 enddef
-
 
 update_with(drv, lambda(delta)(
 	if stage = INTRO then

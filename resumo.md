@@ -1,6 +1,8 @@
 - Patriota Adventures    
 Bullet hell
 
+[ ] BUG: para de atirar depois de pegar o power up
+
 MVP
 [x] Patriota aparecer
 [x] Patriota move
@@ -12,8 +14,10 @@ MVP
 [x] Fases
 [x] Pegar bonus (fakenews)
 [x] power upss
-[ ] Estrilhaco de Tiro 
+[x] colisao melhor
+[x] Estrilhaco de Tiro 
 [ ] Inimigo atira
+[x] Colisao inimigo x patriota
 [ ] Colisao tiro inimigo x patriota
 [x] Game over
 [ ] Comportamento de cada inimigo em cada fase
@@ -44,6 +48,14 @@ Mostra na tela no canto esquerdo o quao powerupzado
 maximum patriota 3
 
 VIDA: Oculos escuros 
+
+BOSS
+- Jean Willis
+- GLeisi Hiffman
+- Lula
+- Karl Marx
+- Kim Jom un
+
 
 GOSTA:
 - Bolsonaro
