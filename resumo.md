@@ -3,24 +3,6 @@ Bullet hell
 
 [ ] BUG: para de atirar depois de pegar o power up
 
-MVP
-[x] Patriota aparecer
-[x] Patriota move
-[x] Patriota atirar
-[x] Patriota move diagonal
-[x] Objeto inimigo
-[x] Colisao tiro x inimigo que tira vida do inimigo
-[x] Intro / Instructions
-[x] Fases
-[x] Pegar bonus (fakenews)
-[x] power upss
-[x] colisao melhor
-[x] Estrilhaco de Tiro 
-[ ] Inimigo atira
-[x] Colisao inimigo x patriota
-[ ] Colisao tiro inimigo x patriota
-[x] Game over
-[ ] Comportamento de cada inimigo em cada fase
 
 PLOT
 > Olavo de carvalho te chama e fala: "O brasil precisa de voce"
@@ -56,7 +38,6 @@ BOSS
 - Karl Marx
 - Kim Jom un
 
-
 GOSTA:
 - Bolsonaro
 - Crucifixo
@@ -85,6 +66,10 @@ Comportamento dos inimigos
 BANDEIRA LGBT
 - Spawn horizontal
 - Ataque: Cai glitter para baixo
+
+FEMINISTA
+- Mini boss
+- Ataque: Fetos
 
 MARX
 - Aparace no canto esquerdo ou direito da tela
